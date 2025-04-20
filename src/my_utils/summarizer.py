@@ -21,10 +21,21 @@ def load_gitignore(repo_root: Path) -> PathSpec:
 def is_binary(p: Path) -> bool:
     t, _ = mimetypes.guess_type(p.name)
     return t is not None and not t.startswith("text")
-
+# --- NEW helper inside summarizer.py --------------------
+def get_utils_dir(repo_root: Path) -> Path | None:
+    """Return Path to the installed my_utils source *if it lives in this repo*."""
+    utils_path = Path(__file__).resolve().parent      # …/my_utils/
+    try:
+        return utils_path.relative_to(repo_root)
+    except ValueError:
+        # utils lives in site‑packages or another repo → nothing to skip
+        return None
 def summarize(repo_root: Path, outfile: Path, max_bytes=MAX_BYTES):
     spec = load_gitignore(repo_root)
     all_paths = sorted(p.relative_to(repo_root) for p in repo_root.rglob("*") if p.is_file())
+    utils_dir = get_utils_dir(repo_root)
+    if utils_dir:
+        all_paths = [p for p in all_paths if not str(p).startswith(str(utils_dir))]
     with outfile.open("w", encoding="utf-8") as out:
         # 1) tree
         out.write("### Repository structure\n\n")
