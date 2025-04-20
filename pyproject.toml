@@ -1,0 +1,9 @@
+[project]
+name = "my-utils"
+version = "0.1.0"
+dependencies = [
+    "pathspec>=0.12"
+]
+
+[project.scripts]
+repo-summarize = "my_utils.summarizer:main"
